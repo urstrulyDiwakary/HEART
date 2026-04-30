@@ -126,7 +126,7 @@
     }
 
     /* ── buttons wrapper ── */
-    #buttonsArea { position:relative; width:100%; height:80px; }
+    #buttonsArea { position:relative; width:100%; height:130px; }
 
     #yesBtn {
       position: absolute;
@@ -325,17 +325,39 @@
     noCount++;
     /* jump animation */
     noBtn.classList.remove('jump');
-    void noBtn.offsetWidth;           // reflow to restart anim
+    void noBtn.offsetWidth;
     noBtn.classList.add('jump');
 
-    /* move to a random spot within the buttonsArea */
-    const area   = document.getElementById('buttonsArea');
-    const aW     = area.offsetWidth;
-    const btnW   = noBtn.offsetWidth;
-    const maxLeft = aW - btnW;
-    const randLeft = Math.floor(Math.random() * maxLeft);
+    /* move to a random spot — but never overlapping YES button */
+    const area     = document.getElementById('buttonsArea');
+    const areaRect = area.getBoundingClientRect();
+    const aW       = area.offsetWidth;
+    const aH       = area.offsetHeight;
+    const btnW     = noBtn.offsetWidth;
+    const btnH     = noBtn.offsetHeight;
+
+    /* YES button bounds relative to buttonsArea */
+    const yesRect  = yesBtn.getBoundingClientRect();
+    const yL = yesRect.left - areaRect.left - 10;   // add 10px padding
+    const yR = yesRect.right  - areaRect.left + 10;
+    const yT = yesRect.top    - areaRect.top  - 10;
+    const yB = yesRect.bottom - areaRect.top  + 10;
+
+    let randLeft, randTop, attempts = 0;
+    do {
+      randLeft = Math.floor(Math.random() * Math.max(1, aW - btnW));
+      randTop  = Math.floor(Math.random() * Math.max(1, aH - btnH));
+      attempts++;
+      /* keep trying until NO button doesn't overlap YES button */
+      const noR = randLeft + btnW;
+      const noB = randTop  + btnH;
+      const overlaps = randLeft < yR && noR > yL && randTop < yB && noB > yT;
+      if (!overlaps) break;
+    } while (attempts < 25);
+
     noBtn.style.position = 'absolute';
     noBtn.style.left     = randLeft + 'px';
+    noBtn.style.top      = randTop  + 'px';
     noBtn.style.transform = 'none';
 
     /* update message after 2 jumps */
