@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>💕 A Special Question For You 💕</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #ffe0f0 0%, #ffc2d4 40%, #ffb3c6 100%);
+      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── floating hearts background ── */
+    .bg-hearts { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+    .bg-hearts span {
+      position: absolute;
+      font-size: 1.4rem;
+      animation: floatUp 8s infinite linear;
+      opacity: 0.25;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(110vh) rotate(0deg); opacity:0.3; }
+      100% { transform: translateY(-10vh)  rotate(360deg); opacity:0; }
+    }
+
+    /* ── card ── */
+    .card {
+      position: relative; z-index:1;
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 44px 40px 50px;
+      max-width: 560px;
+      width: 92%;
+      box-shadow: 0 16px 48px rgba(255,100,160,0.25);
+      text-align: center;
+      transition: transform .3s;
+    }
+
+    /* ── name input screen ── */
+    #inputSection h1 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 2.4rem;
+      color: #e75480;
+      margin-bottom: 8px;
+    }
+    #inputSection p { color:#c2607a; font-size:.95rem; margin-bottom:26px; }
+
+    #nameInput {
+      border: 2.5px solid #ffb3c6;
+      border-radius: 50px;
+      padding: 14px 24px;
+      font-size: 1.1rem;
+      width: 100%;
+      outline: none;
+      color: #b5004e;
+      background: #fff0f5;
+      transition: border-color .3s, box-shadow .3s;
+      text-align: center;
+      font-family: 'Poppins', sans-serif;
+    }
+    #nameInput:focus { border-color:#e75480; box-shadow:0 0 0 4px rgba(231,84,128,.15); }
+
+    #submitBtn {
+      margin-top: 22px;
+      background: linear-gradient(135deg,#ff6eb4,#e75480);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 44px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+      font-family: 'Poppins', sans-serif;
+    }
+    #submitBtn:hover { transform: scale(1.06); box-shadow:0 6px 20px rgba(231,84,128,.45); }
+
+    /* ── question screen ── */
+    #questionSection { display:none; }
+
+    #displayName {
+      font-family: 'Dancing Script', cursive;
+      font-size: 3.2rem;
+      color: #e75480;
+      line-height: 1.1;
+      margin-bottom: 6px;
+      animation: popIn .6s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popIn {
+      0%   { transform: scale(0.4); opacity:0; }
+      100% { transform: scale(1);   opacity:1; }
+    }
+
+    .question-text {
+      font-family: 'Dancing Script', cursive;
+      font-size: 2rem;
+      color: #c2185b;
+      margin: 18px 0 10px;
+    }
+
+    .hint-text {
+      font-size: 0.78rem;
+      color: #d46080;
+      margin-bottom: 30px;
+      font-style: italic;
+    }
+
+    /* ── message box ── */
+    #noMessage {
+      min-height: 34px;
+      font-size: 1.1rem;
+      color: #c2185b;
+      font-weight: 600;
+      margin-bottom: 14px;
+      transition: opacity .4s;
+    }
+
+    /* ── buttons wrapper ── */
+    #buttonsArea { position:relative; width:100%; height:80px; }
+
+    #yesBtn {
+      position: absolute;
+      left: 50%;
+      transform: translateX(calc(-50% - 60px));
+      background: linear-gradient(135deg,#ff80b0,#e75480);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 38px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(231,84,128,.4);
+      transition: transform .2s, box-shadow .2s;
+      font-family: 'Poppins', sans-serif;
+      z-index: 2;
+    }
+    #yesBtn:hover { transform: translateX(calc(-50% - 60px)) scale(1.1); box-shadow:0 10px 30px rgba(231,84,128,.55); }
+
+    #noBtn {
+      position: absolute;
+      left: 50%;
+      transform: translateX(calc(-50% + 60px));
+      background: #fff;
+      color: #888;
+      border: 2px solid #ddd;
+      border-radius: 50px;
+      padding: 14px 38px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .15s;
+      font-family: 'Poppins', sans-serif;
+      z-index: 2;
+      user-select: none;
+    }
+
+    @keyframes jumpShake {
+      0%   { transform: translate(0,0) rotate(0deg); }
+      25%  { transform: translate(-18px,-22px) rotate(-8deg); }
+      50%  { transform: translate(18px,-18px) rotate(8deg); }
+      75%  { transform: translate(-12px, 10px) rotate(-4deg); }
+      100% { transform: translate(0,0) rotate(0deg); }
+    }
+    .jump { animation: jumpShake .45s ease; }
+
+    /* ── YES result screen ── */
+    #resultSection { display:none; animation: fadeIn .8s ease; }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(30px);} to{opacity:1; transform:translateY(0);} }
+
+    .yay-text {
+      font-family: 'Dancing Script', cursive;
+      font-size: 3rem;
+      color: #e75480;
+      margin-bottom: 6px;
+    }
+    .best-decision {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #c2185b;
+      margin: 10px 0 20px;
+    }
+
+    .couple-img {
+      width: 200px;
+      height: auto;
+      border-radius: 20px;
+      margin: 10px auto 20px;
+      display: block;
+      box-shadow: 0 8px 28px rgba(231,84,128,.35);
+      animation: heartBeat 1.2s ease infinite;
+    }
+    @keyframes heartBeat {
+      0%,100% { transform: scale(1); }
+      14%      { transform: scale(1.07); }
+      28%      { transform: scale(1); }
+      42%      { transform: scale(1.05); }
+      70%      { transform: scale(1); }
+    }
+
+    .love-text {
+      font-family: 'Dancing Script', cursive;
+      font-size: 2.4rem;
+      color: #e75480;
+      margin-top: 10px;
+    }
+
+    /* ── confetti burst ── */
+    .confetti-wrap { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:999; }
+    .confetti-piece {
+      position:absolute;
+      width:10px; height:10px;
+      border-radius:50%;
+      animation: confettiFall 3s forwards;
+      opacity: 1;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(-20px) rotate(0deg); opacity:1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity:0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- floating background hearts -->
+<div class="bg-hearts" id="bgHearts"></div>
+
+<div class="card">
+
+  <!-- ════════ SCREEN 1 : Name Input ════════ -->
+  <div id="inputSection">
+    <h1>💌 Hey Cutie!</h1>
+    <p>Enter your cute name below 🌸</p>
+    <input id="nameInput" type="text" placeholder="Your cute name here... 🌷" maxlength="30" />
+    <br/>
+    <button id="submitBtn" onclick="showQuestion()">Let's Go 💕</button>
+  </div>
+
+  <!-- ════════ SCREEN 2 : Question ════════ -->
+  <div id="questionSection">
+    <div id="displayName"></div>
+    <div class="question-text">💖 Will You Be My Life Partner? 💖</div>
+    <div class="hint-text">( Choose wisely… The &ldquo;NO&rdquo; button is&hellip;&hellip; shy. )</div>
+
+    <div id="noMessage"></div>
+
+    <div id="buttonsArea">
+      <button id="yesBtn" onclick="showResult()">YES 💗</button>
+      <button id="noBtn"
+              onmouseover="avoidNo()"
+              ontouchstart="avoidNo()">NO</button>
+    </div>
+  </div>
+
+  <!-- ════════ SCREEN 3 : YES Result ════════ -->
+  <div id="resultSection">
+    <div class="yay-text">❤️ YAY !! ❤️</div>
+    <div class="best-decision">Best Decision Ever 😘💋</div>
+    <img class="couple-img" id="coupleImg" src="aldisingh-aldinun.gif" alt="Us 💕" />
+    <div class="love-text">I Love You ❤️</div>
+  </div>
+
+</div>
+
+<!-- confetti container -->
+<div class="confetti-wrap" id="confettiWrap"></div>
+
+<script>
+  /* ─── floating background hearts ─── */
+  const bgHearts = document.getElementById('bgHearts');
+  const heartChars = ['❤️','💕','💖','💗','💓','🌸','✨'];
+  for (let i = 0; i < 22; i++) {
+    const s = document.createElement('span');
+    s.textContent = heartChars[Math.floor(Math.random() * heartChars.length)];
+    s.style.left  = Math.random() * 100 + 'vw';
+    s.style.animationDelay    = Math.random() * 8  + 's';
+    s.style.animationDuration = (6 + Math.random() * 6) + 's';
+    s.style.fontSize = (1 + Math.random() * 1.5) + 'rem';
+    bgHearts.appendChild(s);
+  }
+
+  /* ─── Screen 1 → Screen 2 ─── */
+  function showQuestion() {
+    const name = document.getElementById('nameInput').value.trim();
+    if (!name) {
+      document.getElementById('nameInput').style.borderColor = '#e75480';
+      document.getElementById('nameInput').placeholder = 'Please enter your cute name 🌷';
+      return;
+    }
+    document.getElementById('inputSection').style.display   = 'none';
+    document.getElementById('questionSection').style.display = 'block';
+    document.getElementById('displayName').textContent = name + ' 🌸';
+  }
+
+  /* allow Enter key on input */
+  document.getElementById('nameInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') showQuestion();
+  });
+
+  /* ─── NO button shy logic ─── */
+  let noCount = 0;
+  const noBtn      = document.getElementById('noBtn');
+  const noMessage  = document.getElementById('noMessage');
+
+  const noMessages = [
+    '',
+    '',
+    "😢 Don't do this… Please, No! 🥺",
+    "⚠️ This could be a mistake… Think again! 🤔💭",
+    "😭 My heart is breaking… reconsider please! 💔",
+    "🙈 Noooo! You're making me cry! 😭",
+  ];
+
+  function avoidNo() {
+    noCount++;
+    /* jump animation */
+    noBtn.classList.remove('jump');
+    void noBtn.offsetWidth;           // reflow to restart anim
+    noBtn.classList.add('jump');
+
+    /* move to a random spot within the buttonsArea */
+    const area   = document.getElementById('buttonsArea');
+    const aW     = area.offsetWidth;
+    const btnW   = noBtn.offsetWidth;
+    const maxLeft = aW - btnW;
+    const randLeft = Math.floor(Math.random() * maxLeft);
+    noBtn.style.position = 'absolute';
+    noBtn.style.left     = randLeft + 'px';
+    noBtn.style.transform = 'none';
+
+    /* update message after 2 jumps */
+    const msgIdx = Math.min(noCount, noMessages.length - 1);
+    noMessage.textContent = noMessages[msgIdx];
+
+    setTimeout(() => noBtn.classList.remove('jump'), 450);
+  }
+
+  /* ─── YES button → Screen 3 ─── */
+  function showResult() {
+    document.getElementById('questionSection').style.display = 'none';
+    document.getElementById('resultSection').style.display   = 'block';
+    launchConfetti();
+  }
+
+  /* ─── confetti burst ─── */
+  function launchConfetti() {
+    const colors = ['#ff6eb4','#e75480','#ff80b0','#ffb3c6','#ff4081','#fff','#ffd700'];
+    const wrap   = document.getElementById('confettiWrap');
+    wrap.innerHTML = '';
+    for (let i = 0; i < 120; i++) {
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.left            = Math.random() * 100 + 'vw';
+      p.style.top             = '-20px';
+      p.style.background      = colors[Math.floor(Math.random() * colors.length)];
+      p.style.width           = (6 + Math.random() * 8) + 'px';
+      p.style.height          = (6 + Math.random() * 8) + 'px';
+      p.style.borderRadius    = Math.random() > .5 ? '50%' : '2px';
+      p.style.animationDelay  = Math.random() * 1.5 + 's';
+      p.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+      wrap.appendChild(p);
+    }
+    setTimeout(() => wrap.innerHTML = '', 5000);
+  }
+</script>
+</body>
+</html>
+
