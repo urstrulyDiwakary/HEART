@@ -257,8 +257,9 @@
     <div id="buttonsArea">
       <button id="yesBtn" onclick="showResult()">YES 💗</button>
       <button id="noBtn"
-              onmouseover="avoidNo()"
-              ontouchstart="avoidNo()">NO</button>
+              onmouseover="moveNoBtn()"
+              ontouchstart="handleNoTouch(event)"
+              onclick="handleNoClick()">NO</button>
     </div>
   </div>
 
@@ -308,13 +309,14 @@
   });
 
   /* ─── NO button shy logic ─── */
-  let noCount = 0;
-  const noBtn      = document.getElementById('noBtn');
-  const noMessage  = document.getElementById('noMessage');
+  let msgIndex  = 0;   // tracks which message to show next (never repeats)
+  let moveCount = 0;   // throttle for hover movement
+  let lastMove  = 0;
+
+  const noBtn     = document.getElementById('noBtn');
+  const noMessage = document.getElementById('noMessage');
 
   const noMessages = [
-    '',
-    '',
     "😢 Don't do this… Please, No! 🥺",
     "⚠️ This could be a mistake… Think again! 🤔💭",
     "😭 My heart is breaking… reconsider please! 💔",
@@ -363,52 +365,59 @@
     "😤 Fine! I'll ask again and again and AGAIN! 💪",
     "🫂 All I want is to hold your hand forever… YES?",
     "❤️‍🔥 You know you want to say YES… just do it! 💕",
+    "🌺 I promise to make every day beautiful for you!",
+    "🥹 My eyes are full of tears… please say YES! 💖",
   ];
 
-  function avoidNo() {
-    noCount++;
-    /* jump animation */
+  /* repositions NO button without overlapping YES */
+  function moveNoBtn() {
+    const now = Date.now();
+    if (now - lastMove < 120) return;   // throttle: max once per 120ms
+    lastMove = now;
+
+    const area     = document.getElementById('buttonsArea');
+    const areaRect = area.getBoundingClientRect();
+    const aW = area.offsetWidth,  aH = area.offsetHeight;
+    const bW = noBtn.offsetWidth, bH = noBtn.offsetHeight;
+
+    const yr = yesBtn.getBoundingClientRect();
+    const yL = yr.left   - areaRect.left - 12;
+    const yR = yr.right  - areaRect.left + 12;
+    const yT = yr.top    - areaRect.top  - 12;
+    const yB = yr.bottom - areaRect.top  + 12;
+
+    let rL, rT, tries = 0;
+    do {
+      rL = Math.floor(Math.random() * Math.max(1, aW - bW));
+      rT = Math.floor(Math.random() * Math.max(1, aH - bH));
+      tries++;
+      const overlaps = rL < yR && (rL + bW) > yL && rT < yB && (rT + bH) > yT;
+      if (!overlaps) break;
+    } while (tries < 30);
+
     noBtn.classList.remove('jump');
     void noBtn.offsetWidth;
     noBtn.classList.add('jump');
-
-    /* move to a random spot — but never overlapping YES button */
-    const area     = document.getElementById('buttonsArea');
-    const areaRect = area.getBoundingClientRect();
-    const aW       = area.offsetWidth;
-    const aH       = area.offsetHeight;
-    const btnW     = noBtn.offsetWidth;
-    const btnH     = noBtn.offsetHeight;
-
-    /* YES button bounds relative to buttonsArea */
-    const yesRect  = yesBtn.getBoundingClientRect();
-    const yL = yesRect.left - areaRect.left - 10;   // add 10px padding
-    const yR = yesRect.right  - areaRect.left + 10;
-    const yT = yesRect.top    - areaRect.top  - 10;
-    const yB = yesRect.bottom - areaRect.top  + 10;
-
-    let randLeft, randTop, attempts = 0;
-    do {
-      randLeft = Math.floor(Math.random() * Math.max(1, aW - btnW));
-      randTop  = Math.floor(Math.random() * Math.max(1, aH - btnH));
-      attempts++;
-      /* keep trying until NO button doesn't overlap YES button */
-      const noR = randLeft + btnW;
-      const noB = randTop  + btnH;
-      const overlaps = randLeft < yR && noR > yL && randTop < yB && noB > yT;
-      if (!overlaps) break;
-    } while (attempts < 25);
-
-    noBtn.style.position = 'absolute';
-    noBtn.style.left     = randLeft + 'px';
-    noBtn.style.top      = randTop  + 'px';
+    noBtn.style.position  = 'absolute';
+    noBtn.style.left      = rL + 'px';
+    noBtn.style.top       = rT + 'px';
     noBtn.style.transform = 'none';
-
-    /* update message after 2 jumps */
-    const msgIdx = Math.min(noCount, noMessages.length - 1);
-    noMessage.textContent = noMessages[msgIdx];
-
     setTimeout(() => noBtn.classList.remove('jump'), 450);
+  }
+
+  /* shows exactly ONE new sentence per click — never repeats */
+  function handleNoClick() {
+    if (msgIndex >= noMessages.length) return;  // all 50 shown, do nothing
+    noMessage.textContent = noMessages[msgIndex];
+    msgIndex++;
+    moveNoBtn();
+  }
+
+  /* mobile: touchstart moves button; touchend counts as a "click" */
+  function handleNoTouch(e) {
+    e.preventDefault();
+    moveNoBtn();
+    handleNoClick();
   }
 
   /* ─── YES button → Screen 3 ─── */
